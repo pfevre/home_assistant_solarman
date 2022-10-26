@@ -87,6 +87,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
 
 class SolarmanStatus(Entity):
     def __init__(self, inverter_name, inverter, field_name, sn):
+        self._attr_available = False
         self._inverter_name = inverter_name
         self.inverter = inverter
         self._field_name = field_name
@@ -139,6 +140,10 @@ class SolarmanSensorText(SolarmanStatus):
     #  Retrieve the sensor data from actual interface
         self.inverter.update()
 
+        if self.inverter.status_connection == "Disconnected":
+            self._attr_available = False
+            return
+        self._attr_available = True
         val = self.inverter.get_current_val()
         if val is not None:
             if self._field_name in val:
